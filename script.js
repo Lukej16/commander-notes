@@ -60,6 +60,12 @@ const SETTINGS = {
     add: ["Great synergy", "Strong at my table", "Saw it in another deck", "Upgrade"],
     drop: ["Too slow", "Never drew it", "Dead card", "Too pricey", "Doesn't fit"],
   },
+
+  // The faint hint text in the "Why?" box on the card sheet.
+  NOTE_HINTS: {
+    add: "Anything else?",
+    drop: 'Anything else? e.g. "Never cast it on curve."',
+  },
 };
 
 // Friendly names for the shops Scryfall links to.
@@ -661,6 +667,7 @@ function openCardSheet(list, entryId) {
   $("card-name").textContent = card.name;
   $("card-type").textContent = card.typeLine;
   $("card-note").value = entry.note;
+  $("card-note").placeholder = SETTINGS.NOTE_HINTS[list];
   $("move-card").textContent = "Move to " + LIST_TITLES[otherList(list)];
   renderCardExtras();
   renderPrices(card);
