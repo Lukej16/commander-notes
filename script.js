@@ -267,12 +267,23 @@ async function scryfallGet(path) {
 }
 
 // Cards matching a Scryfall search, most-played in Commander first.
+// Cards whose name starts with what you typed jump to the top, so a
+// basic "Island" isn't buried under "Tropical Island" and friends
+// (basic lands have no Commander ranking, so Scryfall lists them last).
 // Scryfall answers 404 when nothing matches, and 400 if the search
 // text confuses it. Both just mean "no cards".
-async function searchCards(query) {
+async function searchCards(query, typed) {
   try {
     const result = await scryfallGet("/cards/search?unique=cards&order=edhrec&q=" + encodeURIComponent(query));
-    return result.data.slice(0, SETTINGS.MAX_SUGGESTIONS).map(cardFromScryfall);
+    const start = typed.toLowerCase();
+    const rank = (card) => {
+      const name = card.name.toLowerCase();
+      if (name === start) return 0;
+      if (name.startsWith(start)) return 1;
+      return 2;
+    };
+    const sorted = result.data.slice().sort((a, b) => rank(a) - rank(b));
+    return sorted.slice(0, SETTINGS.MAX_SUGGESTIONS).map(cardFromScryfall);
   } catch (error) {
     if (error.status === 404 || error.status === 400) return [];
     throw error;
@@ -607,7 +618,9 @@ async function runSearch(text) {
   setSearchStatus("Searching…");
 
   try {
-    const cards = await searchCards(searchQuery(text));
+    // "basic island" means the card "Island", so drop the word "basic".
+    const name = text.replace(/^basic\s+(lands?\s+)?(?=\S)/i, "");
+    const cards = await searchCards(searchQuery(name), name);
     if (myNumber !== searchNumber) return; // a newer search has started
     renderSuggestions(cards);
     if (cards.length) setSearchStatus("");
