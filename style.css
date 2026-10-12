@@ -280,6 +280,24 @@ img {
   font-size: 0.9rem;
 }
 
+/* Small print at the bottom of the home screen (Wizards fan content notice). */
+.legal {
+  margin-top: 24px;
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.legal p {
+  margin: 0 0 6px;
+}
+
+.legal a {
+  color: inherit;
+  text-decoration: underline;
+}
+
 /* The big floating "✎ Quick note" button at the bottom of the home screen. */
 .quick-note {
   position: fixed;
