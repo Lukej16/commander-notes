@@ -153,7 +153,7 @@
       <!-- One-tap reasons. script.js fills these from SETTINGS.REASONS. -->
       <div id="card-reasons" class="chips"></div>
       <textarea id="card-note" class="note" rows="3"
-                placeholder="Anything else? e.g. &quot;Never cast it on curve.&quot;"></textarea>
+                placeholder="Anything else?"></textarea>
 
       <!-- Strike counter: how many games this card has stood out. -->
       <div class="strikes">
@@ -220,6 +220,19 @@
         <input id="import-input" type="file" accept=".json,application/json" class="visually-hidden" />
       </label>
       <p id="backup-status" class="status"></p>
+    </div>
+  </dialog>
+
+  <!-- ==================================================================
+       ARE YOU SURE? — asks before deleting a deck, removing a card or
+       loading a backup. script.js fills in the words with askFirst().
+       ================================================================== -->
+  <dialog id="sheet-confirm" class="sheet">
+    <div class="sheet__body">
+      <h2 id="confirm-title" class="sheet__title"></h2>
+      <p id="confirm-message" class="muted"></p>
+      <button id="confirm-yes" class="button button--ink button--wide" type="button"></button>
+      <button class="button button--wide" type="button" data-close-sheet>Cancel</button>
     </div>
   </dialog>
 
