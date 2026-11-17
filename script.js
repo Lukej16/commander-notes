@@ -210,6 +210,23 @@ function openSheet(id) {
   if (!sheet.open) sheet.showModal();
 }
 
+// Our own "Are you sure?" pop-up. Waits for an answer, then gives back
+// true (they tapped the big button) or false (Cancel, or tapped outside).
+// Used instead of the browser's confirm() box, which some places block.
+let answerConfirm = null;
+function askFirst(title, message, yesLabel) {
+  $("confirm-title").textContent = title;
+  $("confirm-message").textContent = message;
+  $("confirm-yes").textContent = yesLabel;
+  openSheet("sheet-confirm");
+  return new Promise((resolve) => { answerConfirm = resolve; });
+}
+
+function finishConfirm(answer) {
+  if (answerConfirm) answerConfirm(answer);
+  answerConfirm = null;
+}
+
 // The card's picture, or a box with its name if there is no picture.
 function cardImage(card) {
   if (!card.image) return el("div", "card-image card-image--missing", card.name);
@@ -495,10 +512,15 @@ function refreshDeckIfOpen(commanderId) {
   else renderHome();
 }
 
-function deleteCurrentCommander() {
+async function deleteCurrentCommander() {
   const commander = currentCommander();
   if (!commander) return;
-  if (!confirm(`Delete ${commander.card.name} and all its notes?`)) return;
+  const sure = await askFirst(
+    `Delete ${commander.card.name}?`,
+    "This deletes the deck and all its notes, including its History. You can't undo this.",
+    "Delete deck"
+  );
+  if (!sure) return;
 
   data.commanders = data.commanders.filter((c) => c.id !== commander.id);
   if (data.lastCommanderId === commander.id) data.lastCommanderId = null;
@@ -845,13 +867,19 @@ function moveOpenCard() {
   $("sheet-card").close();
 }
 
-function removeOpenCard() {
+async function removeOpenCard() {
   const entry = findOpenEntry();
-  if (!confirm(`Remove ${entry.card.name} from ${LIST_TITLES[openEntry.list]}?`)) return;
+  const list = openEntry.list;
+  const sure = await askFirst(
+    `Remove ${entry.card.name}?`,
+    `It comes off ${LIST_TITLES[list]}, along with your notes on it.`,
+    "Remove card"
+  );
+  if (!sure) return;
 
   const commander = currentCommander();
   unlinkPair(entry);
-  commander[openEntry.list] = commander[openEntry.list].filter((e) => e !== entry);
+  commander[list] = commander[list].filter((e) => e !== entry);
   saveData();
   $("sheet-card").close();
 }
@@ -915,7 +943,12 @@ async function importBackup(file) {
     const loaded = JSON.parse(await file.text());
     if (!isValidData(loaded)) throw new Error("not a backup");
     const count = loaded.commanders.length;
-    if (!confirm(`Replace everything on this phone with this backup (${plural(count, "deck")})?`)) return;
+    const sure = await askFirst(
+      "Load this backup?",
+      `Everything on this phone gets replaced with the backup (${plural(count, "deck")}).`,
+      "Replace my notes"
+    );
+    if (!sure) return;
 
     data = normalize(loaded);
     saveData();
@@ -979,6 +1012,14 @@ $("sheet-card").addEventListener("close", () => {
 document.querySelectorAll("[data-open-search]").forEach((field) => {
   field.addEventListener("click", () => openSearch(field.dataset.openSearch));
 });
+
+// The "Are you sure?" pop-up: the big button means yes; closing it any
+// other way (Cancel, tapping outside, Escape) means no.
+$("confirm-yes").addEventListener("click", () => {
+  finishConfirm(true);
+  $("sheet-confirm").close();
+});
+$("sheet-confirm").addEventListener("close", () => finishConfirm(false));
 
 // "Cancel" / "Done" buttons, and tapping the dark area outside a sheet, close it.
 document.querySelectorAll("dialog").forEach((dialog) => {

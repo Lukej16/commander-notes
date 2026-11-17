@@ -208,6 +208,19 @@
     </div>
   </dialog>
 
+  <!-- ==================================================================
+       ARE YOU SURE? — asks before deleting a deck, removing a card or
+       loading a backup. script.js fills in the words with askFirst().
+       ================================================================== -->
+  <dialog id="sheet-confirm" class="sheet">
+    <div class="sheet__body">
+      <h2 id="confirm-title" class="sheet__title"></h2>
+      <p id="confirm-message" class="muted"></p>
+      <button id="confirm-yes" class="button button--ink button--wide" type="button"></button>
+      <button class="button button--wide" type="button" data-close-sheet>Cancel</button>
+    </div>
+  </dialog>
+
   <!-- Little pop-up messages like "Copied" appear here. -->
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
